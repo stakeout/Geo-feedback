@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://fonts.googleapis.com/css?family=Fira+Sans:400,300,500&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!--endbuild-->
+    <title>Фильтр друзей</title>
+    <script>
+    function myFunction(event) {
+        alert(event.target.nodeName);
+    }
+    </script>
+</head>
+
+<body>
+    <div id="map">
+        <div class="popup-wrapper">
+            <header>
+                <h2 class="current-address">текущий адрес</h2>
+                <span class="btn-close">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                </span>
+            </header>
+            <section class="users-review" data-content="reviews">
+                <h3>отзывов пока нет</h3>
+                <ul class="users-review__list">
+
+                </ul>
+            </section>
+            <section class="user-inputs">
+                <h3>Ваш отзыв</h3>
+                <input type="text" placeholder="ваше имя" class="user-name">
+                <input type="text" placeholder="укажите место" class="user-place">
+                <textarea name="" id="" cols="30" rows="5" class="user-message" placeholder="поделитесь впечатлениями"></textarea>
+                <footer>
+                    <input type="submit">
+                </footer>
+            </section>
+        </div>
+    </div>
+    <script type="text/x-handlebars-template" id="friendsItemTemplate">
+        {{#each list}}
+        <li class="friend-list__item" draggable="true" data-id="{{user_id}}">
+            <img draggable="false" src="{{./photo_50}}" alt="">
+            <span class="name">{{./first_name}} {{./last_name}}</span>
+            <span class="add"><i class="fa fa-plus toggle"></i></span>
+        </li>
+        {{/each}}
+    </script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
