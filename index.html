@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/style.css">
     <!--endbuild-->
-    <title>Фильтр друзей</title>
+    <title>Geo-feedback</title>
     <script>
     function myFunction(event) {
         alert(event.target.nodeName);
@@ -21,7 +21,7 @@
 
 <body>
     <div id="map">
-        <div class="popup-wrapper">
+        <div class="popup-wrapper display-none">
             <header>
                 <h2 class="current-address">текущий адрес</h2>
                 <span class="btn-close">
@@ -40,11 +40,13 @@
                 <input type="text" placeholder="укажите место" class="user-place">
                 <textarea name="" id="" cols="30" rows="5" class="user-message" placeholder="поделитесь впечатлениями"></textarea>
                 <footer>
-                    <input type="submit">
+                    <input type="submit" class="add-review">
                 </footer>
             </section>
         </div>
     </div>
+
+
     <script type="text/x-handlebars-template" id="friendsItemTemplate">
         {{#each list}}
         <li class="friend-list__item" draggable="true" data-id="{{user_id}}">
