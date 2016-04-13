@@ -2,6 +2,7 @@
 	box-sizing: border-box;;
 }
 body{
+    position: relative;
     margin: 0;
 	font-family: 'Fira Sans', sans-serif;
 	font-weight: 400;
@@ -16,14 +17,11 @@ h1,h2,h3,p,ul{
 	margin: 0;
 }
 #map{
-    position: relative;
     width: 100%;
     height: 100vh;
 }
 .popup-wrapper{
     position: absolute;
-    right: 30px;
-    top:60px;
 	min-height:500px;
 	width: 300px;
 	background-color: #fff;

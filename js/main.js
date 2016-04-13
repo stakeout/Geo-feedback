@@ -20,16 +20,48 @@ function init() {
 
     myMap = new ymaps.Map("map", {//вызываем карту
         center: [53.8828, 27.7188],//Минск
-        zoom: 7
+        zoom: 14
 
+    });
+
+    var clusterer = new ymaps.Clusterer({
+        preset: 'islands#greenDotIcon',
+        groupByCoordinates: false,
+        clusterDisableClickZoom: true,
+        clusterHideIconOnBalloonOpen: false,
+        geoObjectHideIconOnBalloonOpen: false
     });
 //show popup on map click
     myMap.events.add('click', function (e) {
-        //При клике на карте открываем форму добавления нового отзыва
-        var coords = e.get('coords');
+        //show popup onclick
         reviewForm.classList.remove('display-none');
+        //coords for popup appearance
+        var pagePixels = e.get('pagePixels');
+        reviewForm.style.left = pagePixels[0] + 'px';
+        reviewForm.style.top = pagePixels[1] + 'px';
+        //map click coords
+        var coords = e.get('coords');
+        var coordX = coords[0];
+        var coordY = coords[1];
+        ymaps.geocode(coords).then(function (res) {
+            var firstGeoObject = res.geoObjects.get(0);
+            var address = firstGeoObject.properties.get('text');
+
+            //set address in popup head
+            reviewFormAddress.innerText = address;
+        });
+        //создаем метку
+        myMap.geoObjects
+            .add(new ymaps.Placemark([coordX, coordY],
+            {
+                preset: 'islands#greenDotIcon'
+
+            }));
     });
-//popup close listener
+
+
+
+    //popup close listener
     btnClose.addEventListener('click', function(e){
         e.preventDefault();
         closePopup();
