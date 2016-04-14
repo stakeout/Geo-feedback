@@ -68,7 +68,8 @@ function init() {
 
     //send data to server with ajax
     addReview.addEventListener('click', sendDataAjax);
-        function sendDataAjax () {
+        function sendDataAjax (e) {
+            e.preventDefault();
             var address = reviewFormAddress.innerText;
             var name = userName.value;
             var place = userPlace.value;
@@ -91,14 +92,16 @@ function init() {
             };
 
             userData = JSON.stringify(userData);
-            console.log(userData);
             //ajax send data
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'http://localhost:3000/', true);
             xhr.onreadystatechange = function(){  // Формируем функцию срабатывания на успешный ответ от сервера
                 if (xhr.readyState == 4) {
                     console.log(xhr.responseText);
+                } else if(xhr.status === 200){
+                    console.log(xhr.statusText);
                 }
+
             };
             xhr.send(userData);
 
