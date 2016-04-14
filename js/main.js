@@ -16,63 +16,103 @@ function init() {
     var btnClose = document.querySelector('.btn-close');
 //submit btn
     var addReview = document.querySelector('.add-review');
-
+//coords
+    var coords;
 
     myMap = new ymaps.Map("map", {//вызываем карту
-        center: [53.8828, 27.7188],//Минск
+        center: [53.8928, 27.5469],//Минск
         zoom: 14
 
     });
-
     var clusterer = new ymaps.Clusterer({
         preset: 'islands#greenDotIcon',
         groupByCoordinates: false,
         clusterDisableClickZoom: true,
         clusterHideIconOnBalloonOpen: false,
-        geoObjectHideIconOnBalloonOpen: false
+        geoObjectHideIconOnBalloonOpen: false,
+        clusterBalloonContentLayout: 'cluster#balloonCarousel'
     });
-//show popup on map click
-    myMap.events.add('click', function (e) {
+
+
+    //show popup on map click
+    myMap.events.add('click', popupShow);
+
+    function popupShow(e) {
         //show popup onclick
-        reviewForm.classList.remove('display-none');
-        //coords for popup appearance
+        coord = e.get('coords');
         var pagePixels = e.get('pagePixels');
         reviewForm.style.left = pagePixels[0] + 'px';
         reviewForm.style.top = pagePixels[1] + 'px';
-        //map click coords
-        var coords = e.get('coords');
-        var coordX = coords[0];
-        var coordY = coords[1];
+        reviewForm.classList.remove('display-none');
         ymaps.geocode(coords).then(function (res) {
             var firstGeoObject = res.geoObjects.get(0);
-            var address = firstGeoObject.properties.get('text');
-
+            var address = firstGeoObject.properties.get('name') + ',' + ' ' + firstGeoObject.properties.get('description');
             //set address in popup head
             reviewFormAddress.innerText = address;
         });
-        //создаем метку
-        myMap.geoObjects
-            .add(new ymaps.Placemark([coordX, coordY],
-            {
-                preset: 'islands#greenDotIcon'
-
-            }));
-    });
-
-
-
-    //popup close listener
-    btnClose.addEventListener('click', function(e){
-        e.preventDefault();
-        closePopup();
-    });
-    function closePopup() {
-        reviewForm.classList.add('display-none');
-        reviewFormAddress.innerText = '';
-        userName.value = '';
-        userPlace.value = '';
-        userMessage.value = '';
     }
 
+    // Создание метки
+    function createPlacemark(coords) {
+        return new ymaps.Placemark(coords, {
+            preset: 'islands#violetStretchyIcon'
+        });
+    }
+
+    //send data to server with ajax
+    addReview.addEventListener('click', sendDataAjax);
+        function sendDataAjax (coords) {
+            var address = reviewFormAddress.innerText;
+            var name = userName;
+            var place = userPlace;
+            var text = userMessage;
+            var date = new Date();
+
+            //add mark
+            createPlacemark();
+            //data obj to send
+            var userData = {
+                "op": "add",
+                "review": {
+                    "coords": {'x': coords[0], 'y': coords[1]},
+                    "address": address,
+                    "name": userName,
+                    "place": userPlace,
+                    "text": userMessage,
+                    "date": date
+                }
+            };
+            //ajax send data
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:3000/', true);
+            xhr.onreadystatechange = function(){  // Формируем функцию срабатывания на успешный ответ от сервера
+                if (xhr.readyState == 4) {
+                    console.log(xhr.responseText);
+                }
+            };
+            xhr.send(JSON.stringify(userData));
+
+
+
+            clusterer.add(new ymaps.Placemark(coords[0], coords[1]));
+        }
+
+
+
+        //add clasterer
+        myMap.geoObjects.add(clusterer);
+        //popup close listener
+        btnClose.addEventListener('click', closePopup);
+        function closePopup() {
+            reviewForm.classList.add('display-none');
+            reviewFormAddress.innerText = '';
+            userName.value = '';
+            userPlace.value = '';
+            userMessage.value = '';
+        }
+
 //end init func
-}
+    }
+
+
+

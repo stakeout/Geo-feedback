@@ -17,7 +17,6 @@ var assert = require('assert'),
                     assert.notStrictEqual(parsed.review.coords.y, undefined);
                     assert.equal(parsed.review.coords.x > 0, true);
                     assert.equal(parsed.review.coords.y > 0, true);
-
                     assert.equal(typeof parsed.review.address, 'string');
                     assert.equal(parsed.review.address.trim().length > 0, true);
 
@@ -64,7 +63,7 @@ var assert = require('assert'),
         });
     });
 
-server.listen(3000, 'localhost');
+server.listen(3000, 'localhost', () => console.log('ok.....'));
 
 function parsePost(req) {
     return new Promise(function(resolve) {
