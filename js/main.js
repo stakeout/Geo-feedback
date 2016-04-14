@@ -18,6 +18,8 @@ function init() {
     var addReview = document.querySelector('.add-review');
 //coords
     var coords;
+    var coordX;
+    var coordY;
 
     myMap = new ymaps.Map("map", {//вызываем карту
         center: [53.8928, 27.5469],//Минск
@@ -39,7 +41,12 @@ function init() {
 
     function popupShow(e) {
         //show popup onclick
-        coord = e.get('coords');
+        var coord = e.get('coords');
+        coords = coord;
+        coordX = coords[0];
+        coordY = coords[1];
+        console.log(coords);
+        console.log(coordX, coordY);
         var pagePixels = e.get('pagePixels');
         reviewForm.style.left = pagePixels[0] + 'px';
         reviewForm.style.top = pagePixels[1] + 'px';
@@ -61,11 +68,11 @@ function init() {
 
     //send data to server with ajax
     addReview.addEventListener('click', sendDataAjax);
-        function sendDataAjax (coords) {
+        function sendDataAjax () {
             var address = reviewFormAddress.innerText;
-            var name = userName;
-            var place = userPlace;
-            var text = userMessage;
+            var name = userName.value;
+            var place = userPlace.value;
+            var text = userMessage.value;
             var date = new Date();
 
             //add mark
@@ -74,14 +81,17 @@ function init() {
             var userData = {
                 "op": "add",
                 "review": {
-                    "coords": {'x': coords[0], 'y': coords[1]},
+                    "coords": {'x': coordX, 'y': coordY},
                     "address": address,
-                    "name": userName,
-                    "place": userPlace,
-                    "text": userMessage,
+                    "name": name,
+                    "place": place,
+                    "text": text,
                     "date": date
                 }
             };
+
+            userData = JSON.stringify(userData);
+            console.log(userData);
             //ajax send data
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'http://localhost:3000/', true);
@@ -90,11 +100,11 @@ function init() {
                     console.log(xhr.responseText);
                 }
             };
-            xhr.send(JSON.stringify(userData));
+            xhr.send(userData);
 
 
 
-            clusterer.add(new ymaps.Placemark(coords[0], coords[1]));
+            clusterer.add(new ymaps.Placemark(coordX, coordY));
         }
 
 
