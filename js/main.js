@@ -20,6 +20,8 @@ function init() {
     var coords;
     var coordX;
     var coordY;
+//objects
+    var places = [];
 
     myMap = new ymaps.Map("map", {//вызываем карту
         center: [53.8928, 27.5469],//Минск
@@ -27,14 +29,14 @@ function init() {
 
     });
     var clusterer = new ymaps.Clusterer({
-        preset: 'islands#greenDotIcon',
         groupByCoordinates: false,
         clusterDisableClickZoom: true,
         clusterHideIconOnBalloonOpen: false,
         geoObjectHideIconOnBalloonOpen: false,
         clusterBalloonContentLayout: 'cluster#balloonCarousel'
     });
-
+    //отрисовываем точки после релоуда страницы
+    renderMarks();
 
     //show popup on map click
     myMap.events.add('click', popupShow);
@@ -42,6 +44,9 @@ function init() {
     function popupShow(e) {
         //show popup onclick
         var coord = e.get('coords');
+        userName.value = '';
+        userPlace.value = '';
+        userMessage.value = '';
         coords = coord;
         coordX = coords[0];
         coordY = coords[1];
@@ -59,25 +64,61 @@ function init() {
         });
     }
 
-    // Создание метки
-    function createPlacemark(coords) {
-        return new ymaps.Placemark(coords, {
-            preset: 'islands#violetStretchyIcon'
-        });
+    //get marks from server & render
+    function renderMarks() {
+        var xhr  = new XMLHttpRequest();
+        //запрос серверу какой именно кейс вернуть
+        var reviewData = {'op': "all"};
+        xhr.open('POST', 'http://localhost:3000/', true);
+        xhr.send(JSON.stringify(reviewData));
+        //событие "запрос завершен"
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState != 4) return;
+            //получаем объект
+            reviewsBase = JSON.parse(xhr.response);
+            //перебираем ключи массива объектов
+            for(var keys in reviewsBase){
+                //получаем значения координат каждого ключа coords
+                reviewsBase[keys].forEach(function(key) {
+                    var X = key.coords.x;
+                    var Y = key.coords.y;
+                    //указываем, какие данные выводить для точки
+                    var place = new ymaps.Placemark([X, Y], {
+                        balloonContentHeader: key.name,
+                        balloonContentBody: key.text,
+                        balloonContentFooter: new Date(key.date).toLocaleString()
+                    });
+                    //добавляем готовую к рендеру точку в массив мест с отзывами
+                    places.push(place);
+                })
+            }
+            //добавляем массив точек к api кластеризации
+            clusterer.add(places);
+            //выводим кластеризацию на карту
+            myMap.geoObjects.add(clusterer);
+        };
+
+
+
     }
+
 
     //send data to server with ajax
     addReview.addEventListener('click', sendDataAjax);
         function sendDataAjax (e) {
             e.preventDefault();
+            var mark = new ymaps.Placemark([coordX, coordY], {}, {
+                // Задаем стиль метки (метка в виде круга).
+                preset: "islands#dotCircleIcon",
+                // Задаем цвет метки (в формате RGB).
+                iconColor: '#ff0000'
+            });
             var address = reviewFormAddress.innerText;
             var name = userName.value;
             var place = userPlace.value;
             var text = userMessage.value;
             var date = new Date();
 
-            //add mark
-            createPlacemark();
             //data obj to send
             var userData = {
                 "op": "add",
@@ -87,33 +128,32 @@ function init() {
                     "name": name,
                     "place": place,
                     "text": text,
-                    "date": date
+                    "date": date.toUTCString()
                 }
             };
 
-            userData = JSON.stringify(userData);
             //ajax send data
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'http://localhost:3000/', true);
+            xhr.send(JSON.stringify(userData));
             xhr.onreadystatechange = function(){  // Формируем функцию срабатывания на успешный ответ от сервера
-                if (xhr.readyState == 4) {
-                    console.log(xhr.responseText);
-                } else if(xhr.status === 200){
-                    console.log(xhr.statusText);
+                if(xhr.readyState === 4){
+                    //ставим метку только по OK от сервера
+                    myMap.geoObjects.add(mark);
+                    places.push(userData.review);
+                    console.log(places);
+                }else {
+                    return;
                 }
 
             };
-            xhr.send(userData);
 
-
-
-            clusterer.add(new ymaps.Placemark(coordX, coordY));
         }
 
 
 
         //add clasterer
-        myMap.geoObjects.add(clusterer);
+
         //popup close listener
         btnClose.addEventListener('click', closePopup);
         function closePopup() {
