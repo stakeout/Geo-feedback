@@ -29,10 +29,7 @@
                 </span>
             </header>
             <section class="users-review" data-content="reviews">
-                <h3>отзывов пока нет</h3>
-                <ul class="users-review__list">
 
-                </ul>
             </section>
             <section class="user-inputs">
                 <h3>Ваш отзыв</h3>
@@ -47,14 +44,25 @@
     </div>
 
 
-    <script type="text/x-handlebars-template" id="friendsItemTemplate">
-        {{#each list}}
-        <li class="friend-list__item" draggable="true" data-id="{{user_id}}">
-            <img draggable="false" src="{{./photo_50}}" alt="">
-            <span class="name">{{./first_name}} {{./last_name}}</span>
-            <span class="add"><i class="fa fa-plus toggle"></i></span>
-        </li>
-        {{/each}}
+    <script type="text/x-handlebars-template" id="usersReviewsTemplate">
+        <ul class="users-review__list">
+            {{#if list}}
+                {{#each list}}
+                <li class="users-review__item">
+                    <div class="users-parameters">
+                        <span class="name">{{name}}</span>
+                        <span class="place">{{place}}</span>
+                        <span class="date">{{date}}</span>
+                    </div>
+                    <p class="user-text-review">{{text}}</p>
+                </li>
+                {{/each}}
+            {{else}}
+                <li class="users-review__item">
+                    отзывов пока нет...
+                </li>
+            {{/if}}
+        </ul>
     </script>
     <script src="js/main.js"></script>
 </body>

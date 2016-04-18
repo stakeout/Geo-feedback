@@ -27,13 +27,24 @@ function init() {
         center: [53.8928, 27.5469],//Минск
         zoom: 14
 
+
     });
+    // Создаем собственный макет с информацией о выбранном геообъекте.
+    var customItemContentLayout = ymaps.templateLayoutFactory.createClass(
+        // Флаг "raw" означает, что данные вставляют "как есть" без экранирования html.
+        '<h2 class=ballon_header>{{ properties.balloonContentHeader|raw }}</h2>' +
+        '<div class=ballon_body>{{ properties.balloonContentBody|raw }}</div>' +
+        '<div class=ballon_footer>{{ properties.balloonContentFooter|raw }}</div>'
+    );
     var clusterer = new ymaps.Clusterer({
+        preset: 'islands#invertedVioletClusterIcons',
         groupByCoordinates: false,
         clusterDisableClickZoom: true,
         clusterHideIconOnBalloonOpen: false,
         geoObjectHideIconOnBalloonOpen: false,
-        clusterBalloonContentLayout: 'cluster#balloonCarousel'
+        clusterBalloonItemContentLayout: customItemContentLayout,
+        clusterBalloonContentLayout: 'cluster#balloonCarousel',
+        clusterBalloonPagerSize: 5
     });
     //отрисовываем точки после релоуда страницы
     renderMarks();
@@ -50,15 +61,13 @@ function init() {
         coords = coord;
         coordX = coords[0];
         coordY = coords[1];
-        console.log(coords);
-        console.log(coordX, coordY);
         var pagePixels = e.get('pagePixels');
         reviewForm.style.left = pagePixels[0] + 'px';
         reviewForm.style.top = pagePixels[1] + 'px';
         reviewForm.classList.remove('display-none');
         ymaps.geocode(coords).then(function (res) {
             var firstGeoObject = res.geoObjects.get(0);
-            var address = firstGeoObject.properties.get('name') + ',' + ' ' + firstGeoObject.properties.get('description');
+            var address = firstGeoObject.properties.get('name') + ',' + ' ' + firstGeoObject.properties.get('description').split(', ')[1];
             //set address in popup head
             reviewFormAddress.innerText = address;
         });
@@ -76,6 +85,7 @@ function init() {
             if (xhr.readyState != 4) return;
             //получаем объект
             reviewsBase = JSON.parse(xhr.response);
+            console.log(xhr.response);
             //перебираем ключи массива объектов
             for(var keys in reviewsBase){
                 //получаем значения координат каждого ключа coords
@@ -86,12 +96,25 @@ function init() {
                     var place = new ymaps.Placemark([X, Y], {
                         balloonContentHeader: key.name,
                         balloonContentBody: key.text,
-                        balloonContentFooter: new Date(key.date).toLocaleString()
+                        balloonContentFooter: new Date(key.date).toLocaleDateString(),
+                        // Задаем стиль метки (метка в виде круга).
+                        preset: "islands#dotCircleIcon",
+                        // Задаем цвет метки (в формате RGB).
+                        iconColor: '#ff0000'
                     });
                     //добавляем готовую к рендеру точку в массив мест с отзывами
                     places.push(place);
                 })
             }
+            //передаем данные отзывов в попап
+                var content = document.querySelector('.users-review');
+                var source = usersReviewsTemplate.innerHTML;
+                var templateFn = Handlebars.compile(source);
+                var viewsTemplate = templateFn({
+                list: reviewsBase
+                });
+                content.innerHTML = viewsTemplate;
+
             //добавляем массив точек к api кластеризации
             clusterer.add(places);
             //выводим кластеризацию на карту
@@ -102,13 +125,12 @@ function init() {
 
     }
 
-
     //send data to server with ajax
     addReview.addEventListener('click', sendDataAjax);
         function sendDataAjax (e) {
             e.preventDefault();
             var mark = new ymaps.Placemark([coordX, coordY], {}, {
-                // Задаем стиль метки (метка в виде круга).
+                 // Задаем стиль метки (метка в виде круга).
                 preset: "islands#dotCircleIcon",
                 // Задаем цвет метки (в формате RGB).
                 iconColor: '#ff0000'
@@ -141,7 +163,10 @@ function init() {
                     //ставим метку только по OK от сервера
                     myMap.geoObjects.add(mark);
                     places.push(userData.review);
-                    console.log(places);
+                    //кластеризация добавленных точек
+                    clusterer.add(mark);
+
+                    myMap.geoObjects.add(clusterer);
                 }else {
                     return;
                 }
@@ -152,7 +177,6 @@ function init() {
 
 
 
-        //add clasterer
 
         //popup close listener
         btnClose.addEventListener('click', closePopup);
