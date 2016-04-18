@@ -29,7 +29,8 @@
                 </span>
             </header>
             <section class="users-review" data-content="reviews">
-
+                <ul class="users-review__list">
+                </ul>
             </section>
             <section class="user-inputs">
                 <h3>Ваш отзыв</h3>
@@ -45,9 +46,8 @@
 
     <a class="github-fork-ribbon" href="http://github.com/stakeout/Geo-feedback" title="Fork me on GitHub">Fork me on GitHub</a>
     <script type="text/x-handlebars-template" id="usersReviewsTemplate">
-        <ul class="users-review__list">
-            {{#if list}}
-                {{#each list}}
+
+                {{#each data}}
                 <li class="users-review__item">
                     <div class="users-parameters">
                         <span class="name">{{name}}</span>
@@ -57,12 +57,9 @@
                     <p class="user-text-review">{{text}}</p>
                 </li>
                 {{/each}}
-            {{else}}
-                <li class="users-review__item">
-                    отзывов пока нет...
-                </li>
-            {{/if}}
-        </ul>
+
+
+
     </script>
     <script src="js/main.js"></script>
 </body>

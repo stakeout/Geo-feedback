@@ -29,20 +29,13 @@ function init() {
 
 
     });
-    // Создаем собственный макет с информацией о выбранном геообъекте.
-    var customItemContentLayout = ymaps.templateLayoutFactory.createClass(
-        // Флаг "raw" означает, что данные вставляют "как есть" без экранирования html.
-        '<h2 class=ballon_header>{{ properties.balloonContentHeader|raw }}</h2>' +
-        '<div class=ballon_body>{{ properties.balloonContentBody|raw }}</div>' +
-        '<div class=ballon_footer>{{ properties.balloonContentFooter|raw }}</div>'
-    );
+
     var clusterer = new ymaps.Clusterer({
         preset: 'islands#invertedVioletClusterIcons',
         groupByCoordinates: false,
         clusterDisableClickZoom: true,
         clusterHideIconOnBalloonOpen: false,
         geoObjectHideIconOnBalloonOpen: false,
-        clusterBalloonItemContentLayout: customItemContentLayout,
         clusterBalloonContentLayout: 'cluster#balloonCarousel',
         clusterBalloonPagerSize: 5
     });
@@ -55,9 +48,7 @@ function init() {
     function popupShow(e) {
         //show popup onclick
         var coord = e.get('coords');
-        userName.value = '';
-        userPlace.value = '';
-        userMessage.value = '';
+        document.querySelector('.users-review__list').innerHTML = "Отзывов пока нет";
         coords = coord;
         coordX = coords[0];
         coordY = coords[1];
@@ -75,21 +66,21 @@ function init() {
 
     //get marks from server & render
     function renderMarks() {
-        var xhr  = new XMLHttpRequest();
+        var xhr = new XMLHttpRequest();
         //запрос серверу какой именно кейс вернуть
         var reviewData = {'op': "all"};
         xhr.open('POST', 'http://localhost:3000/', true);
         xhr.send(JSON.stringify(reviewData));
         //событие "запрос завершен"
-        xhr.onreadystatechange = function() {
+        xhr.onreadystatechange = function () {
             if (xhr.readyState != 4) return;
             //получаем объект
             reviewsBase = JSON.parse(xhr.response);
             console.log(xhr.response);
             //перебираем ключи массива объектов
-            for(var keys in reviewsBase){
+            for (var keys in reviewsBase) {
                 //получаем значения координат каждого ключа coords
-                reviewsBase[keys].forEach(function(key) {
+                reviewsBase[keys].forEach(function (key) {
                     var X = key.coords.x;
                     var Y = key.coords.y;
                     //указываем, какие данные выводить для точки
@@ -106,15 +97,6 @@ function init() {
                     places.push(place);
                 })
             }
-            //передаем данные отзывов в попап
-                var content = document.querySelector('.users-review');
-                var source = usersReviewsTemplate.innerHTML;
-                var templateFn = Handlebars.compile(source);
-                var viewsTemplate = templateFn({
-                list: reviewsBase
-                });
-                content.innerHTML = viewsTemplate;
-
             //добавляем массив точек к api кластеризации
             clusterer.add(places);
             //выводим кластеризацию на карту
@@ -122,74 +104,112 @@ function init() {
         };
 
 
-
     }
 
     //send data to server with ajax
     addReview.addEventListener('click', sendDataAjax);
-        function sendDataAjax (e) {
-            e.preventDefault();
-            var mark = new ymaps.Placemark([coordX, coordY], {}, {
-                 // Задаем стиль метки (метка в виде круга).
-                preset: "islands#dotCircleIcon",
-                // Задаем цвет метки (в формате RGB).
-                iconColor: '#ff0000'
-            });
-            var address = reviewFormAddress.innerText;
-            var name = userName.value;
-            var place = userPlace.value;
-            var text = userMessage.value;
-            var date = new Date();
+    function sendDataAjax(e) {
+        e.preventDefault();
+        var mark = new ymaps.Placemark([coordX, coordY], {}, {
+            // Задаем стиль метки (метка в виде круга).
+            preset: "islands#dotCircleIcon",
+            // Задаем цвет метки (в формате RGB).
+            iconColor: '#ff0000'
+        });
+        var address = reviewFormAddress.innerText;
+        var name = userName.value;
+        var place = userPlace.value;
+        var text = userMessage.value;
+        var date = new Date();
 
-            //data obj to send
-            var userData = {
-                "op": "add",
-                "review": {
-                    "coords": {'x': coordX, 'y': coordY},
-                    "address": address,
-                    "name": name,
-                    "place": place,
-                    "text": text,
-                    "date": date.toUTCString()
-                }
-            };
-
-            //ajax send data
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'http://localhost:3000/', true);
-            xhr.send(JSON.stringify(userData));
-            xhr.onreadystatechange = function(){  // Формируем функцию срабатывания на успешный ответ от сервера
-                if(xhr.readyState === 4){
-                    //ставим метку только по OK от сервера
-                    myMap.geoObjects.add(mark);
-                    places.push(userData.review);
-                    //кластеризация добавленных точек
-                    clusterer.add(mark);
-
-                    myMap.geoObjects.add(clusterer);
-                }else {
-                    return;
-                }
-
-            };
-
-        }
+        //data obj to send
+        var userData = {
+            "op": "add",
+            "review": {
+                "coords": {'x': coordX, 'y': coordY},
+                "address": address,
+                "name": name,
+                "place": place,
+                "text": text,
+                "date": date.toUTCString()
+            }
+        };
 
 
+        //ajax send data
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:3000/', true);
+        xhr.send(JSON.stringify(userData));
+        xhr.onreadystatechange = function () {  // Формируем функцию срабатывания на успешный ответ от сервера
+            if (xhr.readyState === 4) {
+                console.log("Ура! Ура! Я отправил данные!");
+
+                renderReviews(address);
+
+                //ставим метку только по OK от сервера
+                myMap.geoObjects.add(mark);
+                places.push(userData.review);
+                //кластеризация добавленных точек
+                clusterer.add(mark);
+
+                myMap.geoObjects.add(clusterer);
+            } else {
+                return;
+            }
+        };
+        userName.value = '';
+        userPlace.value = '';
+        userMessage.value = '';
 
 
-        //popup close listener
-        btnClose.addEventListener('click', closePopup);
-        function closePopup() {
-            reviewForm.classList.add('display-none');
-            reviewFormAddress.innerText = '';
-            userName.value = '';
-            userPlace.value = '';
-            userMessage.value = '';
-        }
+    }
+
+    function renderReviews(address) {
+
+        var getDataRequest = {
+            "op": "get",
+            "address": address
+        };
+
+        //ajax send data
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:3000/', true);
+        xhr.send(JSON.stringify(getDataRequest));
+        xhr.onreadystatechange = function () {  // Формируем функцию срабатывания на успешный ответ от сервера
+            if (xhr.readyState === 4) {
+                //передаем данные отзывов в попап
+                var content = document.querySelector('.users-review__list');
+                var source = usersReviewsTemplate.innerHTML;
+                var templateFn = Handlebars.compile(source);
+                var response = xhr.responseText;
+                var responseObj = JSON.parse(response);
+                var viewsTemplate = templateFn({
+                    data: responseObj
+
+                });
+                console.log(responseObj);
+                content.innerHTML = viewsTemplate;
+
+            } else {
+                return;
+            }
+        };
+
+    }
+
+
+    //popup close listener
+    btnClose.addEventListener('click', closePopup);
+    function closePopup() {
+        reviewForm.classList.add('display-none');
+        reviewFormAddress.innerText = '';
+        userName.value = '';
+        userPlace.value = '';
+        userMessage.value = '';
+    }
 
 //end init func
-    }
+}
 
 
 
