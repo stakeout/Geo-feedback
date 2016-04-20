@@ -76,7 +76,6 @@ function init() {
             if (xhr.readyState != 4) return;
             //получаем объект
             reviewsBase = JSON.parse(xhr.response);
-            console.log(xhr.response);
             //перебираем ключи массива объектов
             for (var keys in reviewsBase) {
                 //получаем значения координат каждого ключа coords
@@ -183,13 +182,18 @@ function init() {
                 var templateFn = Handlebars.compile(source);
                 var response = xhr.responseText;
                 var responseObj = JSON.parse(response);
+
+                for (var i=0; i<responseObj.length; i++){
+                    var dateString = new Date(responseObj[i].date).toLocaleDateString();
+                    responseObj[i].date = dateString;
+                }
+
                 var viewsTemplate = templateFn({
                     data: responseObj
 
                 });
-                console.log(responseObj);
-                content.innerHTML = viewsTemplate;
 
+                content.innerHTML = viewsTemplate;
             } else {
                 return;
             }
@@ -197,7 +201,7 @@ function init() {
 
     }
 
-
+    
     //popup close listener
     btnClose.addEventListener('click', closePopup);
     function closePopup() {
@@ -210,6 +214,9 @@ function init() {
 
 //end init func
 }
+
+
+
 
 
 

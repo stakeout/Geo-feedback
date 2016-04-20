@@ -126,6 +126,20 @@ input:-ms-input-placeholder {
 	color: #a5a5a5;
 	font-weight: 300;
 }
+.users-parameters{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+.date,
+.name,
+.place{
+    border-bottom: 1px solid #ccc;
+}
+.name{
+    font-weight: 500;
+}
+/*=====================================*/
 .github-fork-ribbon {
     width: 12.1em;
     height: 12.1em;
