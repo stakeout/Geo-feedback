@@ -69,7 +69,7 @@ function init() {
         var xhr = new XMLHttpRequest();
         //запрос серверу какой именно кейс вернуть
         var reviewData = {'op': "all"};
-        xhr.open('POST', 'http://localhost:3000/', true);
+        xhr.open('POST', 'http://smelukov.com:3000', true);
         xhr.send(JSON.stringify(reviewData));
         //событие "запрос завершен"
         xhr.onreadystatechange = function () {
@@ -137,7 +137,7 @@ function init() {
 
         //ajax send data
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost:3000/', true);
+        xhr.open('POST', 'http://smelukov.com:3000', true);
         xhr.send(JSON.stringify(userData));
         xhr.onreadystatechange = function () {  // Формируем функцию срабатывания на успешный ответ от сервера
             if (xhr.readyState === 4) {
@@ -172,7 +172,7 @@ function init() {
 
         //ajax send data
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost:3000/', true);
+        xhr.open('POST', 'http://smelukov.com:3000', true);
         xhr.send(JSON.stringify(getDataRequest));
         xhr.onreadystatechange = function () {  // Формируем функцию срабатывания на успешный ответ от сервера
             if (xhr.readyState === 4) {
